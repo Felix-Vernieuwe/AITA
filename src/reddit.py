@@ -12,5 +12,7 @@ reddit = praw.Reddit(
     password=os.getenv("password")
 )
 
+aita = reddit.subreddit("AmITheAsshole")
+
 for submission in reddit.subreddit("AmITheAsshole").hot(limit=10):
     print(submission.title)

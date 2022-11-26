@@ -6,16 +6,23 @@ from schema import PostSchema
 from whoosh import index
 import tqdm
 import datetime
+import os
 
 data = pandas.read_csv("aita_clean.csv")
 
-# Process data and put into Lucene
+
+if not os.path.exists("indexdir"):
+    os.mkdir("indexdir")
+
 ix = index.create_in('indexdir', PostSchema)
 
 writer = ix.writer()
 
 # Set row timestamp as int type
 data['timestamp'] = pd.to_datetime(data['timestamp'], unit="s")
+data['timestamp'] = pd.Series(data['timestamp'].dt.to_pydatetime(), dtype=object)
+data = data.fillna("0")
+data['timestamp'] = pd.Series(data['timestamp'].dt.to_pydatetime(), dtype=object)
 
 loading_bar = tqdm.tqdm(len(data))
 for index, row in data.iterrows():

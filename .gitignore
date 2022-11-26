@@ -1,1 +1,4 @@
 aita_clean.csv
+.env
+indexdir
+__pycache__

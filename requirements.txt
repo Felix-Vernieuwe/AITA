@@ -3,3 +3,4 @@ tqdm
 Whoosh
 pandas
 praw
+python-dotenv

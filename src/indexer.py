@@ -1,3 +1,13 @@
+import pandas
+import pandas as pd
+
+from schema import PostSchema
+from whoosh import index
+import tqdm
+import datetime
+import os
+
+
 data = pandas.read_csv("aita_clean.csv")
 
 

@@ -7,10 +7,7 @@ ix = index.open_dir("indexdir")
 with ix.searcher() as searcher:
     results = searcher.find("title", "cat")
     for result in results:
-        # Return frequency of term in document body
-        # print(result["body"].frequency("cat"))
-        a = searcher.search(QueryParser("body", ix.schema).parse("cat"))
-        print(a.estimated_length())
+        print(f"Title: {result['title']} - URL: https://www.reddit.com/r/AmItheAsshole/comments/{result['url']}")
 
     # tf-idf
     # qp = QueryParser("body", schema=ix.schema)

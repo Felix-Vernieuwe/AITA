@@ -1,8 +1,13 @@
 import whoosh.index as index
 from whoosh.qparser import QueryParser
 from whoosh import scoring
+import os
+from dotenv import load_dotenv
 
-ix = index.open_dir("indexdir")
+load_dotenv()
+
+index_dir = os.getenv("INDEX_DIR")
+ix = index.open_dir(index_dir)
 
 with ix.searcher() as searcher:
     results = searcher.find("title", "cat")

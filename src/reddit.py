@@ -12,7 +12,10 @@ reddit = praw.Reddit(
     password=os.getenv("password")
 )
 
-aita = reddit.subreddit("AmITheAsshole")
-
-for submission in reddit.subreddit("AmITheAsshole").hot(limit=10):
-    print(submission.title)
+submission = reddit.submission("1ytxov")
+print(submission.title)
+comments = submission.comments
+for comment in comments:
+    print("*" * 100)
+    print(comment.body_html)
+    print(comment.banned_by, comment.author)

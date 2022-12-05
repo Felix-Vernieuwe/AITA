@@ -19,3 +19,15 @@ reddit = praw.Reddit(
     username=os.getenv("username"),
     password=os.getenv("password")
 )
+
+ix = index.open_dir("indexdir")
+
+with ix.searcher() as searcher:
+    results = searcher.find("title", "keep a cat")
+    for result in results:
+        submission = reddit.submission(result['url'])
+        comments = set([comment.body for comment in submission.comments if comment.author and comment.author.name != "AutoModerator"])
+        print(f"Title: {result['title']} - URL: https://www.reddit.com/r/AmItheAsshole/comments/{result['url']}")
+        print(f"Num Comments: {len(comments)}")
+        print(f"=======================================================")
+

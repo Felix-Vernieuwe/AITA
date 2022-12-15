@@ -1,5 +1,10 @@
 aita_clean.csv
 .env
 indexdir
+
 **/__pycache__
 **/.DS_Store
+**/.vscode/
+
+server/venv/
+client/node_modules

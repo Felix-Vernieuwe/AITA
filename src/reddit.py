@@ -1,6 +1,10 @@
-from dotenv import load_dotenv
 import os
+
 import praw
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+import conversions
 
 load_dotenv()
 
@@ -16,6 +20,6 @@ submission = reddit.submission("1ytxov")
 print(submission.title)
 comments = submission.comments
 for comment in comments:
-    print("*" * 100)
-    print(comment.body_html)
-    print(comment.banned_by, comment.author)
+    if comment.body != "[deleted]":
+        print("*" * 100)
+        print(conversions.plain_text(comment.body_html))

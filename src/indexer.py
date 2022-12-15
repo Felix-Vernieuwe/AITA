@@ -8,6 +8,8 @@ import datetime
 import os
 from dotenv import load_dotenv
 
+import conversions
+
 load_dotenv()
 
 data = pandas.read_csv("aita_clean.csv")
@@ -28,7 +30,8 @@ data['timestamp'] = pd.Series(data['timestamp'].dt.to_pydatetime(), dtype=object
 
 loading_bar = tqdm.tqdm(len(data))
 for index, row in data.iterrows():
-    writer.add_document(url=row["id"], timestamp=row["timestamp"], title=row["title"], body=row["body"], edited=row["edited"],
+    body = conversions.plain_text(row["body"], is_markdown=True)
+    writer.add_document(url=row["id"], timestamp=row["timestamp"], title=row["title"], body=body, edited=row["edited"],
                         verdict=row["verdict"], score=row["score"], num_comments=row["num_comments"])
     loading_bar.update(1)
 writer.commit()

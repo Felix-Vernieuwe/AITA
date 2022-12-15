@@ -4,3 +4,8 @@ Whoosh
 pandas
 praw
 python-dotenv
+flask
+flask-RESTful
+flask-cors
+markdown
+beautifulsoup4

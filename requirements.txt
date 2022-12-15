@@ -5,3 +5,8 @@ pandas
 praw
 python-dotenv
 sumy
+flask
+flask-RESTful
+flask-cors
+markdown
+beautifulsoup4

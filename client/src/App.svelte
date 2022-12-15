@@ -6,6 +6,12 @@
     import Analysis from "./lib/Analysis.svelte";
     import { PENDING, LOADING, SEARCH_RESULTS, ANALYSING } from "./lib/status.js";
 
+    let fieldTerms = ["title", "body"];
+    let fields = fieldTerms.reduce((object, term) => ({ ...object, [term]: false}), {});
+    fields.body = true;
+
+    let capitalise = string => string[0].toUpperCase() + string.slice(1);
+
     let status = PENDING;
     let posts = [];
     let searchTerm;
@@ -13,7 +19,7 @@
     {
         status = LOADING;
         const options = {
-            params: { query: searchTerm },
+            params: { query: searchTerm, filters: Object.keys(fields).filter(field => fields[field]).join(",") },
             headers: { "content-type": "application/json" }
         }
         axios.get("http://127.0.0.1:5000/posts", options)
@@ -34,11 +40,25 @@
 
 <main class="w-screen h-screen flex flex-col text-slate-400 bg-slate-800 overflow-hidden">
     <div class="w-full">
-        <div class="mx-auto w-1/3">
-            <form on:submit|preventDefault={query}>
-                <input type="text" placeholder="Search for posts..." bind:value={searchTerm}
-                    class="my-2 p-4 w-full rounded-md border border-slate-400 bg-slate-700">
-            </form>
+        <div class="flex justify-center">
+            <div class="p-2 absolute left-0 text-xl">
+                r/AmITheAsshole Analyser
+            </div>
+            <div class="my-2 w-1/3 relative">
+                <form on:submit|preventDefault={query}>
+                    <input type="text" placeholder="Search for posts..." bind:value={searchTerm}
+                        class="p-4 w-full rounded-md border border-slate-400 bg-slate-700">
+                </form>
+                <div class="ml-2 my-2 absolute left-full top-0 inline-flex rounded-md border
+                           border-slate-400 divide-x divide-slate-400 overflow-hidden">
+                    {#each Object.keys(fields) as field}
+                        <button class="p-2 cursor-pointer" class:bg-sky-700={fields[field]}
+                            on:click|preventDefault={() => fields[field] = !fields[field]}>
+                            { capitalise(field) }
+                        </button>
+                    {/each}
+                </div>
+            </div>
         </div>
     </div>
     <div class="w-full grow overflow-hidden">

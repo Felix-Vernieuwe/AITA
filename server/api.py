@@ -1,7 +1,9 @@
 import os
+import json
 
 from whoosh import scoring
 import whoosh.index as index
+from whoosh.qparser import MultifieldParser
 
 from flask import request
 from flask_restful import Resource
@@ -21,10 +23,13 @@ class Posts(Resource):
         self.index = index.open_dir(index_dir)
 
     def get(self):
-        query = request.args["query"]
+        query_string = request.args["query"]
+        fields = request.args["filters"].split(",")
+        query_parser = MultifieldParser(fields, schema=self.index.schema)
+        query = query_parser.parse(query_string)
         with self.index.searcher(weighting=scoring.TF_IDF()) as searcher_tfidf:
             jsonify = lambda result: {"url": result["url"], "title": result["title"]}
-            return {"posts": [jsonify(result) for result in searcher_tfidf.find("body", query, limit=20)]}, 200
+            return {"posts": [jsonify(result) for result in searcher_tfidf.search(query, limit=20)]}, 200
 
 class Post(Resource):
     def __init__(self, *args, **kwargs):

@@ -4,3 +4,4 @@ Whoosh
 pandas
 praw
 python-dotenv
+sumy

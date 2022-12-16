@@ -15,6 +15,9 @@ from torch.utils.data import RandomSampler, SequentialSampler
 
 import torch.nn as nn
 
+from src.classifiers.classifier import Classifier, preprocess_dataset
+
+
 EPOCH = 3
 BATCH_SIZE = 32
 LEARNING_RATE = 2e-5
@@ -23,7 +26,6 @@ VALIDATION_SPLIT = 0.2
 
 logging.set_verbosity_error()
 
-from src.classifiers.classifier import Classifier, preprocess_dataset
 
 
 def flat_accuracy(preds, labels):
@@ -208,7 +210,7 @@ class BertClassifier(Classifier):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("src/server/dataset/aita_clean.csv")
+    df = pd.read_csv("../../../dataset/aita_clean.csv")
     training_set, test_set = preprocess_dataset(df)
 
     classifier = BertClassifier()

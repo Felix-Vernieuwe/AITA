@@ -3,12 +3,14 @@ from typing import List, Tuple
 from tabulate import tabulate
 import tqdm
 
-from src.classifiers.metrics import calculate_metrics, standard_deviation
+from metrics import calculate_metrics, standard_deviation
 
 from sklearn.model_selection import train_test_split
 from sklearn import model_selection
 
-def preprocess_dataset(df: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
+import warnings
+
+def preprocess_dataset(df: pd.DataFrame, equal_distribution=False) -> (pd.DataFrame, pd.DataFrame):
     df = df.fillna("0")
 
     binary_verdicts = {
@@ -30,15 +32,18 @@ def preprocess_dataset(df: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
     # Decrease the size of the training set to make training faster
     # training_set = training_set.sample(frac=0.02, random_state=1)
 
-    # Ensure equal distribution of verdict 0 and 1
-    # training_set = training_set.groupby('verdict').apply(lambda x: x.sample(training_set['verdict'].value_counts().min(), random_state=40)).reset_index(drop=True)
+    if equal_distribution:
+        # Ensure equal distribution of verdict 0 and 1
+        training_set = training_set.groupby('verdict').apply(lambda x: x.sample(training_set['verdict'].value_counts().min(), random_state=40)).reset_index(drop=True)
 
     print("=" * 100)
     print(f"Training on {len(training_set)} samples")
-    print(f"\tAmount of YTA vs NTA samples: {list(training_set['verdict'].value_counts())}")
+    print(f"\tAmount of NTA vs YTA samples: {list(training_set['verdict'].value_counts())}")
+    print(f"\t{round(training_set['verdict'].value_counts()[1] / len(training_set) * 100, 2)}% of samples are NTA")
     print(f"\tAverage length of posts: {training_set['body'].apply(lambda x: len(x.split())).mean()}")
     print(f"Testing on {len(test_set)} samples")
-    print(f"\tAmount of YTA vs NTA samples: {list(test_set['verdict'].value_counts())}")
+    print(f"\tAmount of NTA vs YTA samples: {list(test_set['verdict'].value_counts())}")
+    print(f"\t{round(test_set['verdict'].value_counts()[1] / len(test_set) * 100, 2)}% of samples are NTA")
     print(f"\tAverage length of posts: {test_set['body'].apply(lambda x: len(x.split())).mean()}")
     print("=" * 100)
 
@@ -82,12 +87,19 @@ class Classifier:
         """
 
         observations, expected_outputs, certainties = [], [], []
+
         for index, row in tqdm.tqdm(test_set.iterrows(), total=len(test_set), desc="Calculating metrics"):
             classification, certainty = self.classify(row['body'])
             observations.append(classification)
             expected_outputs.append(row['verdict'])
             certainties.append(certainty)
-        return [sum(certainties) / len(certainties)] + calculate_metrics(observations, expected_outputs)
+
+        obs_occurence = observations.count(0)
+        yta_rate = obs_occurence / len(observations)
+        if yta_rate > 0.9 or yta_rate < 0.1:
+            warnings.warn(f"Observations are skewed towards class {1 if obs_occurence / len(observations) > 0.9 else 0}, {obs_occurence} out of {len(observations)} are the same class.")
+
+        return [sum(certainties) / len(certainties)] + calculate_metrics(observations, expected_outputs) + [yta_rate]
 
     def print_metrics(self, test_set: pd.DataFrame):
         """
@@ -101,7 +113,7 @@ class Classifier:
         # stringified_metrics = list(map(list, zip(*stringified_metrics)))
 
         # Tabulate the metrics
-        print(tabulate([["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score"], stringified_metrics],
+        print(tabulate([["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score", "YTA rate"], stringified_metrics],
                        headers="firstrow", tablefmt="fancy_grid"))
 
     def benchmark_classfier(self, training_set, test_set, folds=5):

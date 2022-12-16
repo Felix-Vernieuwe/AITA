@@ -40,9 +40,7 @@ class MultinomialBayesClassifier(Classifier):
 
 
 if __name__ == "__main__":
-    load_dotenv()
-
-    df = pd.read_csv("../dataset/aita_clean.csv")
+    df = pd.read_csv("../../../dataset/aita_clean.csv")
     training_set, test_set = preprocess_dataset(df)
 
     classifier = MultinomialBayesClassifier()

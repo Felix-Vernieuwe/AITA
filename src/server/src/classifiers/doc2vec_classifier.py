@@ -52,12 +52,12 @@ class Doc2VecClassifier(Classifier):
 
 if __name__ == "__main__":
     df = pd.read_csv("../../../dataset/aita_clean.csv")
-    training_set, test_set = preprocess_dataset(df, equal_distribution=False)
+    training_set, test_set = preprocess_dataset(df, minimize_dataset=True, minimize_training=True, equal_distribution=False)
 
     classifier = Doc2VecClassifier()
     classifier.train(training_set)
 
     # print(classifier.classify("I was the asshole for not letting my friend borrow my car."))
 
-    classifier.print_metrics(test_set)
-    # classifier.benchmark_classfier(training_set, test_set)
+    # classifier.print_metrics(test_set)
+    classifier.benchmark_classfier(training_set, test_set)

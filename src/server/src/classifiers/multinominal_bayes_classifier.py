@@ -6,9 +6,7 @@ import pandas as pd
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
 
-from src.classifiers.metrics import calculate_metrics, standard_deviation
-
-from src.classifiers.classifier import Classifier, preprocess_dataset
+from classifier import Classifier, preprocess_dataset
 
 import pickle
 
@@ -43,7 +41,7 @@ class MultinomialBayesClassifier(Classifier):
 
 if __name__ == "__main__":
     df = pd.read_csv("../../../dataset/aita_clean.csv")
-    training_set, test_set = preprocess_dataset(df)
+    training_set, test_set = preprocess_dataset(df, minimize_dataset=True, minimize_training=True)
 
     classifier = MultinomialBayesClassifier()
     classifier.train(training_set)

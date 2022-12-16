@@ -1,4 +1,6 @@
-def standard_deviation(values):
+from typing import List
+
+def standard_deviation(values: List[float]):
     """
     Calculates the standard deviation of a list of values.
     :param values: List of values.
@@ -6,26 +8,31 @@ def standard_deviation(values):
     """
     return (sum([(x - sum(values) / len(values)) ** 2 for x in values]) / len(values)) ** 0.5
 
-def calculate_metrics(observations, expected_outputs):
+def calculate_metrics(observations: List[int], expected_outputs: List[int]) -> List[float]:
     """
-    Calculates the accuracy, precision, recall and F1 score of observations and their respective standard deviations.
+    Calculates the accuracy, precision, recall and F1 score of observations
     :param observations: Calculated outputs.
     :param expected_outputs: Expected outputs.
-    :return: [(accuracy, standard deviation), (precision, standard deviation), (recall, standard deviation), (F1 score, standard deviation)]
+    :return: [accuracy, precision, recall, fscore]
     """
 
-    accuracy, precision, recall, f1_score = [], [], [], []
+    # precision, recall, fscore, support = score(expected_outputs, observations, average='macro')
+    # accuracy = sum([1 if x == y else 0 for x, y in zip(observations, expected_outputs)]) / len(observations)
 
-    for i in range(len(observations)):
-        accuracy.append(1 if observations[i] == expected_outputs[i] else 0)
-        precision.append(1 if observations[i] == 1 and expected_outputs[i] == 1 else 0)
-        recall.append(1 if observations[i] == 1 and expected_outputs[i] == 1 else 0)
-        if precision[-1] == 1 and recall[-1] == 1:
-            f1_score.append(2 * precision[-1] * recall[-1] / (precision[-1] + recall[-1]) )
-        else:
-            f1_score.append(0)
+    true_pos, false_pos, true_neg, false_neg = 0, 0, 0, 0
+    for x, y in zip(observations, expected_outputs):
+        if x == 1 and y == 1:
+            true_pos += 1
+        elif x == 1 and y == 0:
+            false_pos += 1
+        elif x == 0 and y == 0:
+            true_neg += 1
+        elif x == 0 and y == 1:
+            false_neg += 1
 
-    return [(sum(accuracy) / len(accuracy), standard_deviation(accuracy)),
-            (sum(precision) / len(precision), standard_deviation(precision)),
-            (sum(recall) / len(recall), standard_deviation(recall)),
-            (sum(f1_score) / len(f1_score), standard_deviation(f1_score))]
+    precision = true_pos / (true_pos + false_pos)
+    recall = true_pos / (true_pos + false_neg)
+    fscore = 2 * precision * recall / (precision + recall)
+    accuracy = (true_pos + true_neg) / len(observations)
+
+    return [accuracy, precision, recall, fscore]

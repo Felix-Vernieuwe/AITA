@@ -50,5 +50,5 @@ if __name__ == "__main__":
 
     # print(classifier.classify("I was the asshole for not letting my friend borrow my car."))
 
-    classifier.print_metrics(test_set)
-
+    # classifier.print_metrics(test_set)
+    classifier.benchmark_classfier(training_set, test_set)

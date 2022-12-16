@@ -34,7 +34,7 @@
     function selectPost(event)
     {
         searchTerm = undefined;
-        selectedPost = event.detail.url;
+        selectedPost = event.detail;
         status = ANALYSING;
     }
 </script>
@@ -73,12 +73,12 @@
             <Loading/>
         {:else if status === SEARCH_RESULTS}
             <div class="overflow-scroll space-y-2">
-                {#each posts as { title, url }}
-                    <Post {title} {url} on:selected={selectPost}></Post>
+                {#each posts as { title, url, verdict }}
+                    <Post {title} {url} {verdict} on:selected={selectPost}></Post>
                 {/each}
             </div>
         {:else if status === ANALYSING}
-            <Analysis url={selectedPost}></Analysis>
+            <Analysis {...selectedPost}></Analysis>
         {:else if status === JUDGING}
             <div class="mx-auto w-1/2">
                 <Judgement></Judgement>

@@ -6,6 +6,7 @@
     import Sentiment from "./Sentiment.svelte";
     import Summary from "./Summary.svelte";
 
+    export let verdict;
     export let url;
     let fullUrl = `https://www.reddit.com/r/AmItheAsshole/comments/${url}`
 
@@ -34,10 +35,15 @@
     <div class="p-2 pb-0 h-full grid grid-cols-2 gap-2">
         <div class="overflow-scroll">
             <div class="h-96 bg-slate-900 relative rounded-md border-2 border-slate-400 overflow-scroll">
-                <a class="p-2 block bg-inherit sticky top-0 border-b-2 border-slate-400 text-xl"
-                    href={fullUrl} target="_blank" rel="noreferrer">
-                    { post.title }
-                </a>
+                <div class="bg-inherit sticky top-0">
+                    <a class="p-2 block border-b-2 border-slate-400 text-xl"
+                        href={fullUrl} target="_blank" rel="noreferrer">
+                        { post.title }
+                    </a>
+                    <div class="p-2 border-b-2 border-slate-400">
+                        The commenters ruled "{ verdict }".
+                    </div>
+                </div>
                 <div class="p-2">
                     {@html post.body }
                 </div>

@@ -11,22 +11,22 @@ from flask_restful import Resource
 
 import praw
 from dotenv import load_dotenv
-from src.classifiers.multinominal_bayes_classifier import MultinomialBayesClassifier
-from src.classifiers.bert_classifier import BertClassifier
-from src.classifiers.classifier import preprocess_dataset
+# from src.classifiers.multinominal_bayes_classifier import MultinomialBayesClassifier
+# from src.classifiers.bert_classifier import BertClassifier
+# from src.classifiers.classifier import preprocess_dataset
 
 from src.conversions import html
 from src.summary import lexrank_summary, bert_summary
 
 load_dotenv()
 
-df = pd.read_csv("../dataset/aita_clean.csv")
-training_set, test_set = preprocess_dataset(df)
+# df = pd.read_csv("../dataset/aita_clean.csv")
+# training_set, test_set = preprocess_dataset(df)
 
-bert_classifier = BertClassifier()
-mnb_classifier = MultinomialBayesClassifier()
-bert_classifier.train(training_set)
-mnb_classifier.train(training_set)
+# bert_classifier = BertClassifier()
+# mnb_classifier = MultinomialBayesClassifier()
+# bert_classifier.train(training_set)
+# mnb_classifier.train(training_set)
 # bert_classifier.print_metrics(test_set)
 # mnb_classifier.print_metrics(test_set)
 
@@ -44,7 +44,7 @@ class Posts(Resource):
         query_parser = MultifieldParser(fields, schema=self.index.schema, group=OrGroup)
         query = query_parser.parse(query_string)
         with self.index.searcher(weighting=scoring.TF_IDF()) as searcher_tfidf:
-            jsonify = lambda result: {"url": result["url"], "title": result["title"]}
+            jsonify = lambda result: {"url": result["url"], "title": result["title"], "verdict": result["verdict"]}
             return {"posts": [jsonify(result) for result in searcher_tfidf.search(query, limit=20)]}, 200
 
 class Post(Resource):
@@ -88,8 +88,12 @@ class Summary(Resource):
         )
 
     def get(self):
+        summarize = self.summarizers[request.args["method"]]
+        # if "url" not in request.args:
+        #     return {"summary": summarize(request.args["body"])}, 200
+
         submission = self.reddit.submission(request.args["url"])
-        
+
         yta = set()
         nta = set()
         for comment in submission.comments:
@@ -100,6 +104,5 @@ class Summary(Resource):
             if any(nta in comment.body for nta in ("NTA", "NAH")):
                 nta |= {comment.body}
 
-        summarize = self.summarizers[request.args["method"]]
         return {"post": summarize(submission.selftext), "yta": summarize(*yta), "yta_count": len(yta),
                 "nta": summarize(*nta), "nta_count": len(nta)}, 200

@@ -32,11 +32,11 @@
     }
 </script>
 
-<div class="flex text-right text-lg">
+<div class="flex text-right">
     <button class="p-1.5 h-fit flex-none rounded-md bg-sky-700 text-slate-200" on:click={analyse}>
         <slot></slot>
     </button>
-    <select class="p-2 ml-2 h-fit rounded-md bg-sky-700 text-slate-200" bind:value={method}>
+    <select class="p-1.5 ml-2 h-fit rounded-md bg-sky-700 text-slate-200 text-lg" bind:value={method}>
         {#each methods as method}
             <option value={method}>{ method }</option>
         {/each}

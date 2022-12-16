@@ -51,6 +51,16 @@ class BertClassifier(Classifier):
         self.classifier = None
         self.device = torch.device(self.get_device())
 
+    def save_model(self, path: str = "src/classifiers/bert"):
+        self.classifier.save_pretrained(path + "/classifier")
+        self.tokenizer.save_pretrained(path + "/tokenizer")
+
+    def load_model(self, path: str = "src/classifiers/bert"):
+        self.tokenizer = BertTokenizer.from_pretrained(path + "/classifier")
+        self.classifier = BertForSequenceClassification.from_pretrained(path + "/tokenizer")
+        self.classifier.to(self.device)
+
+
     def get_device(self):
         for device, available in BertClassifier.devices:
             if available():
@@ -211,12 +221,14 @@ class BertClassifier(Classifier):
 
 if __name__ == '__main__':
     df = pd.read_csv("../../../dataset/aita_clean.csv")
-    training_set, test_set = preprocess_dataset(df, minimize_dataset=True, minimize_training=True)
+    training_set, test_set = preprocess_dataset(df, minimize_dataset=False, minimize_training=False)
 
     classifier = BertClassifier()
     classifier.train(training_set)
 
     # print(classifier.classify("I was the asshole for not letting my friend borrow my car."))
+
+    classifier.save_model("bert")
 
     # classifier.print_metrics(test_set)
     classifier.benchmark_classfier(training_set, test_set)

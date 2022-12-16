@@ -6,7 +6,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import pandas as pd
 import numpy as np
 
-from transformers import BertTokenizer, BertForSequenceClassification
+from transformers import BertTokenizer, BertForSequenceClassification, logging
 from sklearn.model_selection import train_test_split
 
 import torch as torch
@@ -20,6 +20,8 @@ BATCH_SIZE = 32
 LEARNING_RATE = 2e-5
 EPSILON = 1e-8
 VALIDATION_SPLIT = 0.2
+
+logging.set_verbosity_error()
 
 from src.classifiers.classifier import Classifier, preprocess_dataset
 
@@ -37,10 +39,19 @@ def flat_accuracy(preds, labels):
 
 
 class BertClassifier(Classifier):
+    devices = [("cuda", lambda: torch.cuda.is_available()),
+               ("mps", lambda: torch.backends.mps.is_available())]
+
     def __init__(self):
         self.tokenizer = None
         self.classifier = None
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device(self.get_device())
+
+    def get_device(self):
+        for device, available in BertClassifier.devices:
+            if available():
+                return device
+        return "cpu"
 
     def tokenize(self, input_text):
         """
@@ -62,18 +73,18 @@ class BertClassifier(Classifier):
         token_id, attention_masks = [], []
 
         # Preprocess training data by tokenizing it, multithreaded for speed
-        # start = time.time()
-        # pool = ThreadPool(4)
-        # encoding_dicts = pool.map(tokenize, train_df['body'])
-        # pool.close()
-        # pool.join()
-        # print("Preprocessing took", time.time() - start, "seconds")
-        # token_id, attention_masks = [x['input_ids'] for x in encoding_dicts], [x['attention_mask'] for x in encoding_dicts]
+        start = time.time()
+        pool = ThreadPool(4)
+        encoding_dicts = pool.map(self.tokenize, data['body'])
+        pool.close()
+        pool.join()
+        print("Preprocessing took", time.time() - start, "seconds")
+        token_id, attention_masks = [x['input_ids'] for x in encoding_dicts], [x['attention_mask'] for x in encoding_dicts]
 
-        for index, row in tqdm.tqdm(data.iterrows(), total=len(data)):
-            encoding_dict = self.tokenize(row['body'])
-            token_id.append(encoding_dict['input_ids'])
-            attention_masks.append(encoding_dict['attention_mask'])
+        # for index, row in tqdm.tqdm(data.iterrows(), total=len(data)):
+        #     encoding_dict = self.tokenize(row['body'])
+        #     token_id.append(encoding_dict['input_ids'])
+        #     attention_masks.append(encoding_dict['attention_mask'])
 
         token_id = torch.cat(token_id, dim=0)
         attention_masks = torch.cat(attention_masks, dim=0)
@@ -110,6 +121,8 @@ class BertClassifier(Classifier):
         # Enable GPU computation if available
         if torch.cuda.is_available():
             self.classifier.cuda()
+        if torch.backends.mps.is_available():
+            self.classifier.to(self.device)
 
         # Training loop
         for epoch in range(EPOCH):
@@ -195,7 +208,7 @@ class BertClassifier(Classifier):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("../dataset/aita_clean.csv")
+    df = pd.read_csv("src/server/dataset/aita_clean.csv")
     training_set, test_set = preprocess_dataset(df)
 
     classifier = BertClassifier()
@@ -203,4 +216,5 @@ if __name__ == '__main__':
 
     # print(classifier.classify("I was the asshole for not letting my friend borrow my car."))
 
-    classifier.print_metrics(test_set)
+    # classifier.print_metrics(test_set)
+    classifier.benchmark_classfier(training_set, test_set)

@@ -1,11 +1,12 @@
 import pandas as pd
 from typing import List, Tuple
-from sklearn.model_selection import train_test_split
 from tabulate import tabulate
 import tqdm
 
 from src.classifiers.metrics import calculate_metrics, standard_deviation
 
+from sklearn.model_selection import train_test_split
+from sklearn import model_selection
 
 def preprocess_dataset(df: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
     df = df.fillna("0")
@@ -27,7 +28,7 @@ def preprocess_dataset(df: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
     training_set, test_set = train_test_split(df, test_size=0.3, random_state=40)
 
     # Decrease the size of the training set to make training faster
-    training_set = training_set.sample(frac=0.02, random_state=1)
+    # training_set = training_set.sample(frac=0.02, random_state=1)
 
     # Ensure equal distribution of verdict 0 and 1
     # training_set = training_set.groupby('verdict').apply(lambda x: x.sample(training_set['verdict'].value_counts().min(), random_state=40)).reset_index(drop=True)
@@ -73,11 +74,11 @@ class Classifier:
         """
         raise NotImplementedError()
 
-    def metrics(self, test_set: pd.DataFrame) -> List[Tuple[float, float]]:
+    def metrics(self, test_set: pd.DataFrame) -> List[float]:
         """
         Calculates the average certainty, accuracy, precision, recall and F1 score on the test data and their respective standard deviations.
         :param test_set: Test data.
-        :return: [(average certainty, standard deviation), (accuracy, standard deviation), (precision, standard deviation), (recall, standard deviation), (F1 score, standard deviation)]
+        :return: [avg certainty, accuracy, precision, recall, fscore]
         """
 
         observations, expected_outputs, certainties = [], [], []
@@ -86,8 +87,7 @@ class Classifier:
             observations.append(classification)
             expected_outputs.append(row['verdict'])
             certainties.append(certainty)
-        return [(sum(certainties) / len(certainties), standard_deviation(certainties))] + \
-            calculate_metrics(observations, expected_outputs)
+        return [sum(certainties) / len(certainties)] + calculate_metrics(observations, expected_outputs)
 
     def print_metrics(self, test_set: pd.DataFrame):
         """
@@ -96,10 +96,42 @@ class Classifier:
         """
         metrics = self.metrics(test_set)
 
-        stringified_metrics = [[str(round(x[0] * 100, 2)) + " ± " + str(round(x[1], 2))] for x in metrics]
+        stringified_metrics = [str(round(x * 100, 2)) for x in metrics]
         # Transpose the table
-        stringified_metrics = list(map(list, zip(*stringified_metrics)))
+        # stringified_metrics = list(map(list, zip(*stringified_metrics)))
 
         # Tabulate the metrics
-        print(tabulate([["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score"], *stringified_metrics],
+        print(tabulate([["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score"], stringified_metrics],
                        headers="firstrow", tablefmt="fancy_grid"))
+
+    def benchmark_classfier(self, training_set, test_set, folds=5):
+        """
+        Benchmarks the classifier by calculating the average metrics over a number of folds.
+        :param training_set: Training data.
+        :param test_set: Test data.
+        :param folds: Number of folds.
+        :return: [(avg certainty, std certainty), (avg accuracy, std accuracy), (avg precision, std precision), (avg recall, std recall), (avg fscore, std fscore)]
+        """
+        kf = model_selection.KFold(n_splits=folds, shuffle=True, random_state=40)
+
+        metrics = []
+        for train_index, test_index in kf.split(training_set):
+            # Split the training set into training and validation sets
+            train, val = training_set.iloc[train_index], training_set.iloc[test_index]
+
+            # Train the classifier
+            self.train(train)
+
+            # Calculate the metrics
+            metrics.append(self.metrics(test_set))
+
+        # Calculate the average metrics and their standard deviations
+        avg_metrics = [sum(x) / len(x) for x in zip(*metrics)]
+        std_metrics = [standard_deviation(x) for x in zip(*metrics)]
+
+        metrics = list(zip(avg_metrics, std_metrics))
+        stringified_metrics = [[str(round(x[0] * 100, 2)) + " ± " + str(round(x[1] * 100, 2)) for x in metrics]]
+
+        print(tabulate([["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score"], *stringified_metrics],
+                          headers="firstrow", tablefmt="fancy_grid"))
+

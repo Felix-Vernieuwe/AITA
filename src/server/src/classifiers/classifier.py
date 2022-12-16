@@ -10,7 +10,10 @@ from sklearn import model_selection
 
 import warnings
 
-def preprocess_dataset(df: pd.DataFrame, equal_distribution=False) -> (pd.DataFrame, pd.DataFrame):
+from multiprocessing.dummy import Pool
+
+def preprocess_dataset(df: pd.DataFrame, equal_distribution=False, minimize_training=False,
+                       minimize_dataset=False, test_split=0.3) -> (pd.DataFrame, pd.DataFrame):
     df = df.fillna("0")
 
     binary_verdicts = {
@@ -23,18 +26,21 @@ def preprocess_dataset(df: pd.DataFrame, equal_distribution=False) -> (pd.DataFr
 
     df['verdict'] = df['verdict'].map(binary_verdicts)
 
-    # Decrease the size of the dataset
-    df = df.sample(frac=0.2, random_state=1)
+    if minimize_dataset:
+        # Decrease the size of the dataset
+        df = df.sample(frac=0.2, random_state=1)
 
     # Split the dataset into training and test sets
-    training_set, test_set = train_test_split(df, test_size=0.3, random_state=40)
+    training_set, test_set = train_test_split(df, test_size=test_split, random_state=40)
 
-    # Decrease the size of the training set to make training faster
-    # training_set = training_set.sample(frac=0.02, random_state=1)
+    if minimize_training:
+        # Decrease the size of the training set to make training faster
+        training_set = training_set.sample(frac=0.02, random_state=1)
 
     if equal_distribution:
         # Ensure equal distribution of verdict 0 and 1
-        training_set = training_set.groupby('verdict').apply(lambda x: x.sample(training_set['verdict'].value_counts().min(), random_state=40)).reset_index(drop=True)
+        training_set = training_set.groupby('verdict').apply(
+            lambda x: x.sample(training_set['verdict'].value_counts().min(), random_state=40)).reset_index(drop=True)
 
     print("=" * 100)
     print(f"Training on {len(training_set)} samples")
@@ -97,9 +103,10 @@ class Classifier:
         obs_occurence = observations.count(0)
         yta_rate = obs_occurence / len(observations)
         if yta_rate > 0.9 or yta_rate < 0.1:
-            warnings.warn(f"Observations are skewed towards class {1 if obs_occurence / len(observations) > 0.9 else 0}, {obs_occurence} out of {len(observations)} are the same class.")
+            warnings.warn(
+                f"Observations are skewed towards class {1 if obs_occurence / len(observations) > 0.9 else 0}, {obs_occurence} out of {len(observations)} are the same class.")
 
-        return [sum(certainties) / len(certainties)] + calculate_metrics(observations, expected_outputs) + [yta_rate]
+        return [sum(certainties) / len(certainties)] + calculate_metrics(observations, expected_outputs) + [1 - yta_rate]
 
     def print_metrics(self, test_set: pd.DataFrame):
         """
@@ -113,8 +120,9 @@ class Classifier:
         # stringified_metrics = list(map(list, zip(*stringified_metrics)))
 
         # Tabulate the metrics
-        print(tabulate([["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score", "YTA rate"], stringified_metrics],
-                       headers="firstrow", tablefmt="fancy_grid"))
+        print(tabulate(
+            [["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score", "NTA rate"], stringified_metrics],
+            headers="firstrow", tablefmt="fancy_grid"))
 
     def benchmark_classfier(self, training_set, test_set, folds=5):
         """
@@ -144,6 +152,5 @@ class Classifier:
         metrics = list(zip(avg_metrics, std_metrics))
         stringified_metrics = [[str(round(x[0] * 100, 2)) + " ± " + str(round(x[1] * 100, 2)) for x in metrics]]
 
-        print(tabulate([["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score"], *stringified_metrics],
-                          headers="firstrow", tablefmt="fancy_grid"))
-
+        print(tabulate([["Avg. certainty", "Accuracy", "Precision", "Recall", "F1 score", "NTA rate"], *stringified_metrics],
+                       headers="firstrow", tablefmt="fancy_grid"))

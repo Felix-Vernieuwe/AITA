@@ -15,7 +15,7 @@ from torch.utils.data import RandomSampler, SequentialSampler
 
 import torch.nn as nn
 
-from src.classifiers.classifier import Classifier, preprocess_dataset
+from classifier import Classifier, preprocess_dataset
 
 
 EPOCH = 3
@@ -23,6 +23,8 @@ BATCH_SIZE = 32
 LEARNING_RATE = 2e-5
 EPSILON = 1e-8
 VALIDATION_SPLIT = 0.2
+ATTENTION_DROPOUT_RATE = 0.1
+HIDDEN_DROPOUT_RATE = 0.1
 
 logging.set_verbosity_error()
 
@@ -48,6 +50,16 @@ class BertClassifier(Classifier):
         self.tokenizer = None
         self.classifier = None
         self.device = torch.device(self.get_device())
+
+    def save_model(self, path: str = "src/classifiers/bert"):
+        self.classifier.save_pretrained(path + "/classifier")
+        self.tokenizer.save_pretrained(path + "/tokenizer")
+
+    def load_model(self, path: str = "src/classifiers/bert"):
+        self.tokenizer = BertTokenizer.from_pretrained(path + "/classifier")
+        self.classifier = BertForSequenceClassification.from_pretrained(path + "/tokenizer")
+        self.classifier.to(self.device)
+
 
     def get_device(self):
         for device, available in BertClassifier.devices:
@@ -113,7 +125,7 @@ class BertClassifier(Classifier):
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
         self.classifier = BertForSequenceClassification. \
             from_pretrained("bert-base-uncased", num_labels=2, output_attentions=False, output_hidden_states=False,
-                            attention_probs_dropout_prob=0.5, hidden_dropout_prob=0.5)
+                            attention_probs_dropout_prob=ATTENTION_DROPOUT_RATE, hidden_dropout_prob=HIDDEN_DROPOUT_RATE)
 
         train_loader, validation_loader = self.preprocess_training_data(train_data)
 
@@ -196,10 +208,8 @@ class BertClassifier(Classifier):
     def classify(self, document):
         encoding_dict = self.tokenize(document)
 
-        input_ids, attention_masks = [encoding_dict['input_ids']], [encoding_dict['attention_mask']]
-
-        input_ids = torch.cat(input_ids, dim=0).to(self.device)
-        attention_masks = torch.cat(attention_masks, dim=0).to(self.device)
+        input_ids = torch.cat([encoding_dict['input_ids']], dim=0).to(self.device)
+        attention_masks = torch.cat([encoding_dict['attention_mask']], dim=0).to(self.device)
 
         with torch.no_grad():
             output = self.classifier(input_ids, token_type_ids=None, attention_mask=attention_masks)
@@ -211,12 +221,14 @@ class BertClassifier(Classifier):
 
 if __name__ == '__main__':
     df = pd.read_csv("../../../dataset/aita_clean.csv")
-    training_set, test_set = preprocess_dataset(df)
+    training_set, test_set = preprocess_dataset(df, minimize_dataset=False, minimize_training=False)
 
     classifier = BertClassifier()
     classifier.train(training_set)
 
     # print(classifier.classify("I was the asshole for not letting my friend borrow my car."))
+
+    classifier.save_model("bert")
 
     # classifier.print_metrics(test_set)
     classifier.benchmark_classfier(training_set, test_set)

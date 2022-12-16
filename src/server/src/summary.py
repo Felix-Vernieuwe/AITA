@@ -14,6 +14,7 @@ def lexrank_summary(*documents, sentences=3):
 
 from summarizer import Summarizer, TransformerSummarizer
 
+# taken from https://medium.com/analytics-vidhya/text-summarization-using-bert-gpt2-xlnet-5ee80608e961
 def bert_summary(*documents, num_sentences=3):
     bert_model = Summarizer()
     return "".join(bert_model("\n".join(documents), num_sentences=num_sentences))

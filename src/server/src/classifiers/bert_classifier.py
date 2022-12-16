@@ -21,7 +21,7 @@ LEARNING_RATE = 2e-5
 EPSILON = 1e-8
 VALIDATION_SPLIT = 0.2
 
-from classifier import Classifier, preprocess_dataset
+from src.classifiers.classifier import Classifier, preprocess_dataset
 
 
 def flat_accuracy(preds, labels):

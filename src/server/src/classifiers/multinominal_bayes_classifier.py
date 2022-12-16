@@ -6,9 +6,9 @@ import pandas as pd
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
 
-from metrics import calculate_metrics, standard_deviation
+from src.classifiers.metrics import calculate_metrics, standard_deviation
 
-from classifier import Classifier, preprocess_dataset
+from src.classifiers.classifier import Classifier, preprocess_dataset
 
 
 class MultinomialBayesClassifier(Classifier):

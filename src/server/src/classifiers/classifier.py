@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from tabulate import tabulate
 import tqdm
 
-from metrics import calculate_metrics, standard_deviation
+from src.classifiers.metrics import calculate_metrics, standard_deviation
 
 
 def preprocess_dataset(df: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):

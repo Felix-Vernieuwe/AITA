@@ -63,7 +63,7 @@
             {#if status !== JUDGING}
                 <button class="m-2 p-2 absolute right-0 rounded-md bg-sky-700 text-slate-200"
                         on:click={() => status = JUDGING}>
-                    Judge me!
+                    Judge Me!
                 </button>
             {/if}
         </div>

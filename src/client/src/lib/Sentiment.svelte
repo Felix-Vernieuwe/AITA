@@ -6,7 +6,9 @@
     let methods = ["BERT", "MNB"];
     let method;
 
-    let sentiment;
+    let analysed = false;
+    let sentiment = { nta: true, certainty: 0.5210935092349745 };
+    $: sentiment.certainty = Math.round(sentiment.certainty * 10000) / 100;
     function analyse()
     {
         if (body !== undefined)
@@ -18,6 +20,7 @@
             axios.get("http://127.0.0.1:5000/sentiment", options)
                 .then(data => {
                     sentiment = data.data;
+                    analysed = true;
                 });
         }
     }
@@ -38,7 +41,7 @@
             <option value={method}>{ method }</option>
         {/each}
     </select>
-    {#if sentiment !== undefined}
+    {#if analysed}
         <div class="p-1.5 grow text-lg">
             Our AI model considers the OP of this post to be { message(sentiment.nta) }, with { sentiment.certainty }% certainty
         </div>

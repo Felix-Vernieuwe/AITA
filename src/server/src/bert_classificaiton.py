@@ -13,7 +13,7 @@ import torch as torch
 from torch.utils.data import TensorDataset
 from torch.utils.data import RandomSampler, SequentialSampler
 
-from JudgeBERT import JudgeBERT
+# from JudgeBERT import JudgeBERT
 
 
 
@@ -27,7 +27,8 @@ VALIDATION_SPLIT = 0.2
 
 
 
-df = pd.read_csv("dataset/aita_clean.csv").fillna("0")
+df = pd.read_csv("aita_clean.csv").fillna("0")
+# df = pd.read_csv("dataset/aita_clean.csv").fillna("0")
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 

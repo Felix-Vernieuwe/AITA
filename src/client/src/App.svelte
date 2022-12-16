@@ -4,11 +4,12 @@
     import Post from "./lib/Post.svelte";
     import Loading from "./lib/Loading.svelte";
     import Analysis from "./lib/Analysis.svelte";
-    import { PENDING, LOADING, SEARCH_RESULTS, ANALYSING } from "./lib/status.js";
+    import Judgement from "./lib/Judgement.svelte";
+    import { PENDING, LOADING, SEARCH_RESULTS, ANALYSING, JUDGING } from "./lib/status.js";
 
     let fieldTerms = ["title", "body"];
     let fields = fieldTerms.reduce((object, term) => ({ ...object, [term]: false}), {});
-    fields.body = true;
+    fields.title = true;
 
     let capitalise = string => string[0].toUpperCase() + string.slice(1);
 
@@ -52,13 +53,19 @@
                 <div class="ml-2 my-2 absolute left-full top-0 inline-flex rounded-md border
                            border-slate-400 divide-x divide-slate-400 overflow-hidden">
                     {#each Object.keys(fields) as field}
-                        <button class="p-2 cursor-pointer" class:bg-sky-700={fields[field]}
+                        <button class="p-2 cursor-pointer text-slate-200" class:bg-sky-700={fields[field]}
                             on:click|preventDefault={() => fields[field] = !fields[field]}>
                             { capitalise(field) }
                         </button>
                     {/each}
                 </div>
             </div>
+            {#if status !== JUDGING}
+                <button class="m-2 p-2 absolute right-0 rounded-md bg-sky-700 text-slate-200"
+                        on:click={() => status = JUDGING}>
+                    Judge me!
+                </button>
+            {/if}
         </div>
     </div>
     <div class="w-full grow overflow-hidden">
@@ -72,6 +79,10 @@
             </div>
         {:else if status === ANALYSING}
             <Analysis url={selectedPost}></Analysis>
+        {:else if status === JUDGING}
+            <div class="mx-auto w-1/2">
+                <Judgement></Judgement>
+            </div>
         {/if}
     </div>
 </main>

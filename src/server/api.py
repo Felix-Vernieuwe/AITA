@@ -11,7 +11,7 @@ from flask_restful import Resource
 import praw
 from dotenv import load_dotenv
 
-from conversions import html
+from src.conversions import html
 
 load_dotenv()
 
@@ -44,8 +44,13 @@ class Post(Resource):
         )
 
     def get(self):
-        submission = self.reddit.submission(request.args['url'])
+        submission = self.reddit.submission(request.args["url"])
         
         suitable = lambda comment: type(comment) == praw.models.Comment and comment.author and comment.author.name != "AutoModerator"
         comments = [html(comment.body) for comment in submission.comments if suitable(comment)]
         return {"comments": comments, "body": html(submission.selftext), "title": submission.title}, 200
+
+class Sentiment(Resource):
+    def get(self):
+        body = request.args["body"]
+        return {"nta": False, "certainty": 82.3}, 200

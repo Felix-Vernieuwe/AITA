@@ -9,4 +9,11 @@ def lexrank_summary(*documents, sentences=3):
     stemmer = Stemmer("english")
     summarizer = LexRankSummarizer(stemmer)
     summarizer.stop_words = get_stop_words("english")
-    return summarizer(parser.document, sentences)
+    summary = summarizer(parser.document, sentences)
+    return " ".join([f"{sentence}" for sentence in summary])
+
+from summarizer import Summarizer, TransformerSummarizer
+
+def bert_summary(*documents, num_sentences=3):
+    bert_model = Summarizer()
+    return "".join(bert_model("\n".join(documents), num_sentences=num_sentences))

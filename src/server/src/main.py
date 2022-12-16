@@ -20,9 +20,10 @@ reddit = praw.Reddit(
     password=os.getenv("password")
 )
 
-ix = index.open_dir("indexdir")
+index_dir = os.getenv("INDEX_DIR")
+ix = index.open_dir(index_dir)
 
-from summary import lexrank_summary
+from summary import lexrank_summary, bert_summary
 
 with ix.searcher() as searcher:
     results = searcher.find("title", "mentally handicap sister")
@@ -40,9 +41,10 @@ with ix.searcher() as searcher:
                 nta |= {comment.body} 
         
         print(f"Title: {result['title']} - URL: https://www.reddit.com/r/AmItheAsshole/comments/{result['url']}")
-        print("\nContent: " + " ".join([f"{sentence}" for sentence in lexrank_summary(submission.selftext)]))
-        print(f"\nYTA ({len(yta)}): " + " ".join([f"{sentence}" for sentence in lexrank_summary(*yta)]))
-        print(f"\nNTA ({len(nta)}): " + " ".join([f"{sentence}" for sentence in lexrank_summary(*nta)]))
-        print(f"\nNum Comments: {len(yta) + len(nta)}")
-        print(f"=======================================================")
-
+        for summary, name in zip([lexrank_summary, bert_summary], ["Lexrank", "BERT"]):
+            print(f"Summary using {name}")
+            print(f"\nContent: {summary(submission.selftext)}")
+            print(f"\nYTA ({len(yta)}): {summary(*yta)}")
+            print(f"\nNTA ({len(nta)}): {summary(*nta)}")
+            print(f"\nNum Comments: {len(yta) + len(nta)}")
+            print(f"=======================================================")

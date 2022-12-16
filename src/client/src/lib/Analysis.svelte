@@ -18,7 +18,6 @@
             .then(data => {
                 loading = false;
                 post = data.data;
-                console.log(post.comments.length);
             });
     });
 </script>

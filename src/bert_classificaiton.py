@@ -13,6 +13,8 @@ import torch as torch
 from torch.utils.data import TensorDataset
 from torch.utils.data import RandomSampler, SequentialSampler
 
+from JudgeBERT import JudgeBERT
+
 
 
 
@@ -25,7 +27,7 @@ VALIDATION_SPLIT = 0.2
 
 
 
-df = pd.read_csv("aita_clean.csv").fillna("0")
+df = pd.read_csv("dataset/aita_clean.csv").fillna("0")
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
@@ -39,13 +41,13 @@ binary_verdicts = {
 
 df['verdict'] = df['verdict'].map(binary_verdicts)
 
-train_df, test_df = train_test_split(df, test_size=0.2, random_state=40)
+train_df, test_df = train_test_split(df, test_size=0.3, random_state=40)
 
 # Minimise dataset
-train_df = train_df.sample(frac=0.1, random_state=40)
+train_df = train_df.sample(frac=0.5, random_state=40)
 
 # Ensure equal distribution of verdict 0 and 1
-train_df = train_df.groupby('verdict').apply(lambda x: x.sample(train_df['verdict'].value_counts().min(), random_state=40)).reset_index(drop=True)
+# train_df = train_df.groupby('verdict').apply(lambda x: x.sample(train_df['verdict'].value_counts().min(), random_state=40)).reset_index(drop=True)
 
 print("=" * 100)
 print(f"Training on {len(train_df)} samples")
@@ -104,7 +106,7 @@ train_loader = torch.utils.data.DataLoader(train_set, batch_size=BATCH_SIZE, sam
 validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=BATCH_SIZE, sampler=SequentialSampler(validation_set))
 
 # Load pre-trained BERT model
-model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2, output_attentions=False, output_hidden_states=False)
+model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2, output_attentions=False, output_hidden_states=False, attention_probs_dropout_prob=0.5, hidden_dropout_prob=0.5)
 
 # Optimizer for the network using AdamW
 optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, eps=EPSILON)

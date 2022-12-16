@@ -4,7 +4,7 @@ import pandas as pd
 
 from whoosh import scoring
 import whoosh.index as index
-from whoosh.qparser import MultifieldParser
+from whoosh.qparser import MultifieldParser, OrGroup
 
 from flask import request
 from flask_restful import Resource
@@ -20,7 +20,7 @@ from src.summary import lexrank_summary, bert_summary
 
 load_dotenv()
 
-df = pd.read_csv("../../dataset/aita_clean.csv")
+df = pd.read_csv("../dataset/aita_clean.csv")
 training_set, test_set = preprocess_dataset(df)
 
 bert_classifier = BertClassifier()
@@ -41,7 +41,7 @@ class Posts(Resource):
     def get(self):
         query_string = request.args["query"]
         fields = request.args["filters"].split(",")
-        query_parser = MultifieldParser(fields, schema=self.index.schema)
+        query_parser = MultifieldParser(fields, schema=self.index.schema, group=OrGroup)
         query = query_parser.parse(query_string)
         with self.index.searcher(weighting=scoring.TF_IDF()) as searcher_tfidf:
             jsonify = lambda result: {"url": result["url"], "title": result["title"]}
@@ -69,7 +69,7 @@ class Post(Resource):
 class Sentiment(Resource):
     def __init__(self):
         self.classifiers = {"BERT": bert_classifier, "MNB": mnb_classifier}
-                
+
     def get(self):
         classifier = self.classifiers[request.args["method"]]
         nta, certainty = classifier.classify(request.args["body"])
@@ -78,7 +78,15 @@ class Sentiment(Resource):
 class Summary(Resource):
     def __init__(self):
         self.summarizers = {"LexRank": lexrank_summary, "BERT": bert_summary}
-        
+
+        self.reddit = praw.Reddit(
+            client_id=os.getenv("CLIENT_ID"),
+            client_secret=os.getenv("CLIENT_SECRET"),
+            user_agent="aita analyser",
+            username=os.getenv("username"),
+            password=os.getenv("password")
+        )
+
     def get(self):
         submission = self.reddit.submission(request.args["url"])
         

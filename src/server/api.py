@@ -29,8 +29,6 @@ bert_classifier = BertClassifier()
 mnb_classifier = MultinomialBayesClassifier()
 doc2vec_classifier = Doc2VecClassifier()
 
-
-
 ALWAYS_TRAIN = False
 
 if ALWAYS_TRAIN:
@@ -69,12 +67,12 @@ else:
         else:
             raise e
 
-
 # bert_classifier.print_metrics(test_set)
 # mnb_classifier.print_metrics(test_set)
 
 try:
     import nltk
+
     nltk.data.find('tokenizers/punkt')
 except LookupError:
     nltk.download('punkt')
@@ -93,8 +91,10 @@ class Posts(Resource):
         query_parser = MultifieldParser(fields, schema=self.index.schema, group=OrGroup)
         query = query_parser.parse(query_string)
         with self.index.searcher(weighting=scoring.TF_IDF()) as searcher_tfidf:
-            jsonify = lambda result: {"url": result["url"], "title": result["title"], "verdict": result["verdict"]}
+            jsonify = lambda result: {"url": result["url"], "title": result["title"], "verdict": result["verdict"],
+                                      "timestamp": result["timestamp"].isoformat()}
             return {"posts": [jsonify(result) for result in searcher_tfidf.search(query, limit=20)]}, 200
+
 
 class Post(Resource):
     def __init__(self, *args, **kwargs):
@@ -110,10 +110,12 @@ class Post(Resource):
 
     def get(self):
         submission = self.reddit.submission(request.args["url"])
-        
-        suitable = lambda comment: type(comment) == praw.models.Comment and comment.author and comment.author.name != "AutoModerator"
+
+        suitable = lambda comment: type(
+            comment) == praw.models.Comment and comment.author and comment.author.name != "AutoModerator"
         comments = [html(comment.body) for comment in submission.comments if suitable(comment)]
         return {"comments": comments, "body": html(submission.selftext), "title": submission.title}, 200
+
 
 class Sentiment(Resource):
     def __init__(self):
@@ -123,7 +125,8 @@ class Sentiment(Resource):
         classifier = self.classifiers[request.args["method"]]
         nta, certainty = classifier.classify(request.args["body"])
         return {"nta": bool(nta), "certainty": certainty}, 200
-    
+
+
 class Summary(Resource):
     def __init__(self):
         self.summarizers = {"LexRank": lexrank_summary, "BERT": bert_summary}
@@ -146,7 +149,8 @@ class Summary(Resource):
         yta = set()
         nta = set()
         for comment in submission.comments:
-            if not isinstance(comment, praw.models.Comment) or not comment.author or comment.author.name == "AutoModerator":
+            if not isinstance(comment,
+                              praw.models.Comment) or not comment.author or comment.author.name == "AutoModerator":
                 continue
             if any(yta in comment.body for yta in ("YTA", "ESH")):
                 yta |= {comment.body}

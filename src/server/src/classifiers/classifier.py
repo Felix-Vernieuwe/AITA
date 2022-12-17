@@ -3,7 +3,7 @@ from typing import List, Tuple
 from tabulate import tabulate
 import tqdm
 
-from metrics import calculate_metrics, standard_deviation
+from src.classifiers.metrics import calculate_metrics, standard_deviation
 
 from sklearn.model_selection import train_test_split
 from sklearn import model_selection

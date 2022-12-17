@@ -6,26 +6,28 @@ import pandas as pd
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
 
-from classifier import Classifier, preprocess_dataset
+from src.classifiers.classifier import Classifier, preprocess_dataset
 
 import pickle
+
 
 class MultinomialBayesClassifier(Classifier):
     def __init__(self):
         self.vectorizer = None
         self.classifier = None
 
-    def save_model(self, path):
-        with open(path + "mnb.vectorizer", "wb") as f:
+    def save_model(self, path="./classifiers/mnb"):
+        if not os.path.exists(path):
+            os.makedirs(path)
+        with open(path + "/vectorizer.pickle", "wb") as f:
             pickle.dump(self.vectorizer, f)
-        with open(path + "mnb.classifier", "wb") as f:
+        with open(path + "/classifier.pickle", "wb") as f:
             pickle.dump(self.classifier, f)
 
-
-    def load_model(self, path):
-        with open(path + "mnb.vectorizer", "rb") as f:
+    def load_model(self, path="./classifiers/mnb"):
+        with open(path + "/vectorizer.pickle", "rb") as f:
             self.vectorizer = pickle.load(f)
-        with open(path + "mnb.classifier", "rb") as f:
+        with open(path + "/classifier.pickle", "rb") as f:
             self.classifier = pickle.load(f)
 
     def train(self, train_data):
@@ -41,10 +43,10 @@ class MultinomialBayesClassifier(Classifier):
 
 if __name__ == "__main__":
     df = pd.read_csv("../../../dataset/aita_clean.csv")
-    training_set, test_set = preprocess_dataset(df, minimize_dataset=True, minimize_training=True)
+    training_set, test_set = preprocess_dataset(df, minimize_dataset=False, minimize_training=False)
 
     classifier = MultinomialBayesClassifier()
-    classifier.train(training_set)
+    # classifier.train(training_set)
 
     # print(classifier.classify("I was the asshole for not letting my friend borrow my car."))
 

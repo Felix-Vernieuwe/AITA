@@ -11,24 +11,73 @@ from flask_restful import Resource
 
 import praw
 from dotenv import load_dotenv
-# from src.classifiers.multinominal_bayes_classifier import MultinomialBayesClassifier
-# from src.classifiers.bert_classifier import BertClassifier
-# from src.classifiers.classifier import preprocess_dataset
 
-from src.conversions import html
-from src.summary import lexrank_summary, bert_summary
+from classifiers.doc2vec_classifier import Doc2VecClassifier
+from classifiers.multinominal_bayes_classifier import MultinomialBayesClassifier
+from classifiers.bert_classifier import BertClassifier
+from classifiers.classifier import preprocess_dataset
+
+from conversions import html
+from summary import lexrank_summary, bert_summary
 
 load_dotenv()
 
-# df = pd.read_csv("../dataset/aita_clean.csv")
-# training_set, test_set = preprocess_dataset(df)
+df = pd.read_csv("../../dataset/aita_clean.csv")
+training_set, test_set = preprocess_dataset(df)
 
-# bert_classifier = BertClassifier()
-# mnb_classifier = MultinomialBayesClassifier()
-# bert_classifier.train(training_set)
-# mnb_classifier.train(training_set)
+bert_classifier = BertClassifier()
+mnb_classifier = MultinomialBayesClassifier()
+doc2vec_classifier = Doc2VecClassifier()
+
+
+
+ALWAYS_TRAIN = False
+
+if ALWAYS_TRAIN:
+    bert_classifier.train(training_set)
+    mnb_classifier.train(training_set)
+    doc2vec_classifier.train(training_set)
+else:
+    try:
+        print("Loading BERT data from disk...")
+        bert_classifier.load_model()
+    except Exception as e:
+        print(e)
+        print("Could not find data for BERT. Training model with provided data...")
+        bert_classifier.train(training_set)
+        bert_classifier.save_model()
+
+    try:
+        print("Loading MNB data from disk...")
+        mnb_classifier.load_model()
+    except Exception as e:
+        if isinstance(e, FileNotFoundError):
+            print("Could not find data for MNB. Training model with provided data...")
+            mnb_classifier.train(training_set)
+            mnb_classifier.save_model()
+        else:
+            raise e
+
+    try:
+        print("Loading Doc2Vec data from disk...")
+        doc2vec_classifier.load_model()
+    except Exception as e:
+        if isinstance(e, FileNotFoundError):
+            print("Could not find data for Doc2Vec. Training model with provided data...")
+            doc2vec_classifier.train(training_set)
+            doc2vec_classifier.save_model()
+        else:
+            raise e
+
+
 # bert_classifier.print_metrics(test_set)
 # mnb_classifier.print_metrics(test_set)
+
+try:
+    import nltk
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
 
 
 class Posts(Resource):
@@ -68,7 +117,7 @@ class Post(Resource):
 
 class Sentiment(Resource):
     def __init__(self):
-        self.classifiers = {"BERT": bert_classifier, "MNB": mnb_classifier}
+        self.classifiers = {"BERT": bert_classifier, "MNB": mnb_classifier, "Doc2Vec": doc2vec_classifier}
 
     def get(self):
         classifier = self.classifiers[request.args["method"]]

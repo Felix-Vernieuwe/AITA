@@ -15,7 +15,7 @@ from torch.utils.data import RandomSampler, SequentialSampler
 
 import torch.nn as nn
 
-from classifier import Classifier, preprocess_dataset
+from src.classifiers.classifier import Classifier, preprocess_dataset
 
 
 EPOCH = 3
@@ -55,10 +55,10 @@ class BertClassifier(Classifier):
         self.classifier.save_pretrained(path + "/classifier")
         self.tokenizer.save_pretrained(path + "/tokenizer")
 
-    def load_model(self, path: str = "src/classifiers/bert"):
-        self.tokenizer = BertTokenizer.from_pretrained(path + "/classifier")
-        self.classifier = BertForSequenceClassification.from_pretrained(path + "/tokenizer")
+    def load_model(self, path: str = "classifiers/bert"):
+        self.classifier = BertForSequenceClassification.from_pretrained(f"{path}/classifier")
         self.classifier.to(self.device)
+        self.tokenizer = BertTokenizer.from_pretrained(f"{path}/tokenizer")
 
 
     def get_device(self):

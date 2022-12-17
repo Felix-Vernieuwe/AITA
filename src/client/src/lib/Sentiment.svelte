@@ -3,7 +3,7 @@
 
     export let body;
 
-    let methods = ["BERT", "MNB"];
+    let methods = ["BERT", "MNB", "Doc2Vec"];
     let method;
 
     let analysed = false;

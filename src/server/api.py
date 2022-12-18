@@ -23,7 +23,7 @@ from src.summary import lexrank_summary, bert_summary
 
 load_dotenv()
 
-df = pd.read_csv("../../dataset/aita_clean.csv")
+df = pd.read_csv("../dataset/aita_clean.csv")
 training_set, test_set = preprocess_dataset(df)
 
 bert_classifier = BertClassifier()

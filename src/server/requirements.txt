@@ -10,7 +10,7 @@ multiprocess
 pandas
 praw
 python-dotenv
-pytorch
+torch
 scipy
 scikit-learn
 sumy

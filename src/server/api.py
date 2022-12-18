@@ -1,6 +1,7 @@
 import os
 import json
 import pandas as pd
+import re
 
 from whoosh import scoring
 import whoosh.index as index
@@ -88,13 +89,21 @@ class Posts(Resource):
     def get(self):
         query_string = request.args["query"]
         fields = request.args["filters"].split(",")
+        if request.args.get("page"):
+            page = int(request.args["page"])
+        else:
+            page = 1
+
         query_parser = MultifieldParser(fields, schema=self.index.schema, group=OrGroup)
         query = query_parser.parse(query_string)
         with self.index.searcher(weighting=scoring.TF_IDF()) as searcher_tfidf:
             jsonify = lambda result: {"url": result["url"], "title": result["title"], "verdict": result["verdict"],
                                       "timestamp": result["timestamp"].isoformat()}
-            return {"posts": [jsonify(result) for result in searcher_tfidf.search(query, limit=20)]}, 200
-
+            posts = [jsonify(result) for result in searcher_tfidf.search_page(query, page, pagelen=20)]
+            nextpage = 0
+            if len(posts) == 20:
+                nextpage = page + 1
+            return {"posts": posts, "nextpage": nextpage}
 
 class Post(Resource):
     def __init__(self, *args, **kwargs):
@@ -113,8 +122,19 @@ class Post(Resource):
 
         suitable = lambda comment: type(
             comment) == praw.models.Comment and comment.author and comment.author.name != "AutoModerator"
-        comments = [html(comment.body) for comment in submission.comments if suitable(comment)]
-        return {"comments": comments, "body": html(submission.selftext), "title": submission.title}, 200
+
+        def determine_verdict(comment):
+            verdict = re.search(r"NTA|YTA|ESH|NAH|INFO|not the asshole", comment.body, re.IGNORECASE)
+            if verdict:
+                verdict = verdict.group(0).lower()
+                if verdict == "not the asshole":
+                    verdict = "nta"
+                return verdict
+            else:
+                return ''
+
+        comments = [{"body": html(comment.body), "timestamp": comment.created * 1000, "score": comment.score, "verdict": determine_verdict(comment)} for comment in submission.comments if suitable(comment)]
+        return {"comments": comments, "body": html(submission.selftext), "title": submission.title, "timestamp": submission.created * 1000}, 200
 
 
 class Sentiment(Resource):

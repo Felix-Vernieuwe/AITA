@@ -19,8 +19,7 @@
     };
     $: verdicts = [{ content: summary.yta, count: summary.yta_count, verdict: "YTA" },
                    { content: summary.nta, count: summary.nta_count, verdict: "NTA" }];
-    function summarize()
-    {
+    function summarize() {
         loading = true;
         summary.yta_count = "x";
         summary.nta_count = "x";
@@ -58,7 +57,7 @@
     <div class="p-2 rounded-md border-2 border-slate-400 bg-slate-900">
         {#if loading}
             <div class="my-4">
-                <Loading></Loading>
+                <Loading/>
             </div>
         {:else}
             { summary.post }

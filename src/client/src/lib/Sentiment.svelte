@@ -11,6 +11,7 @@
     let analyzed = false;
     let sentiment = { nta: true, certainty: 0.5210935092349745 };
     $: sentiment.certainty = Math.round(sentiment.certainty * 10000) / 100;
+
     async function analyze() {
         if (body !== undefined) {
             const options = {
@@ -22,7 +23,7 @@
             analyzed = true;
         }
     }
-    $: method, analyze();
+    $: method, body, analyze();
 
     function message(nta) {
         if (nta) return "not the asshole";

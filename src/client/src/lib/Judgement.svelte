@@ -5,8 +5,28 @@
 </script>
 
 <div>
-    <textarea class="mt-2 p-2 w-full h-96 focus:outline-none focus:ring focus:ring-slate-400
-                    resize-none rounded-md bg-slate-900 text-slate-400"
-            placeholder="Describe your grievings here..." bind:value={body}></textarea>
-    <Sentiment {body}>Judge me!</Sentiment>
+    <textarea class="judgement-area" placeholder="Describe your grievings here..." bind:value={body}/>
+    <Sentiment {body}/>
 </div>
+
+<style>
+    .judgement-area {
+        border-radius: 16px;
+        margin: 16px;
+        padding: 16px;
+        outline: 1px solid var(--border-color);
+        resize: none;
+
+        height: 500px;
+        width: 500px;
+
+        font-family: IBM Plex Sans, Arial, sans-serif;
+        font-size: 16px;
+
+    }
+
+    .judgement-area:focus {
+        outline: 2px solid var(--border-color-hover);
+    }
+
+</style>

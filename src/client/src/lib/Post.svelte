@@ -17,7 +17,7 @@
 
 </script>
 
-<div class="post" on:click={() => dispatch('selected', { url, verdict })}>
+<div class="post post-contents" on:click={() => dispatch('selected', { url, verdict })}>
     <div class="post-header">
         <div class="post-description">
             Posted by u/{display_name}   {display_timestamp}
@@ -33,17 +33,13 @@
 </div>
 
 <style>
-    .post {
+    .post-contents {
         display: flex;
         flex-direction: column;
         align-items: start;
-        background-color: var(--secondary-background);
-        border-radius: 4px;
-        padding: 16px;
+
         transition: all 0.2s ease-in-out;
         gap: 4px;
-
-        border: 1px solid var(--border-color);
 
         font-family: IBM Plex Sans Medium, Arial, sans-serif;
         font-size: 18px;

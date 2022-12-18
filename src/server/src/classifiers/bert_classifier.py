@@ -1,3 +1,9 @@
+# Referenced sources:
+# https://towardsdatascience.com/text-classification-with-bert-in-pytorch-887965e5820f
+# https://towardsdatascience.com/fine-tuning-bert-for-text-classification-54e7df642894
+# https://medium.com/swlh/a-simple-guide-on-using-bert-for-text-classification-bbf041ac8d04
+# https://www.kaggle.com/code/hassanamin/bert-pytorch-cola-classification
+
 import tqdm
 import time
 
@@ -215,8 +221,7 @@ class BertClassifier(Classifier):
             output = self.classifier(input_ids, token_type_ids=None, attention_mask=attention_masks)
 
         # Return classification result and certainty
-        classification = torch.argmax(output.logits, dim=1).item()
-        return classification, output.logits[0][classification].item()
+        return torch.argmax(output.logits, dim=1).item(), torch.softmax(output.logits, dim=1).max().item()
 
 
 if __name__ == '__main__':

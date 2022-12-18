@@ -30,7 +30,7 @@
 </script>
 
 {#if loading}
-    <div class="mt-12">
+    <div class="">
         <Loading/>
     </div>
 {:else}
@@ -39,16 +39,16 @@
             <div class="post-header">
                 <div class="post-description">
                     <span class="post-description-subreddit">r/AmItheAsshole</span>&nbsp;• Posted by
-                    u/{generateName(post.body)} {timeAgo(post.timestamp)}
+                    u/{generateName(post.body.length > 16 ? post.body : post.title)} {timeAgo(post.timestamp)}
                 </div>
                 <a class="post-title" href={fullUrl} target="_blank" rel="noreferrer">
                     { post.title }
                 </a>
             </div>
-            <Verdict verdict={verdict}/>
+            <Verdict verdict={post.verdict.toLowerCase()}/>
 
             <div class="post-body">
-                {@html post.body }
+                {@html post.body ? post.body : "[deleted]" }
             </div>
 
             <hr/>
@@ -95,8 +95,8 @@
             </div>
         </div>
         <div class="analysis">
-            <Summary url={url}></Summary>
-            <Sentiment body={post.body}>Judge this post</Sentiment>
+            <Summary url={url}/>
+            <Sentiment body={post.body}/>
         </div>
     </div>
 
@@ -113,7 +113,6 @@
         border-radius: 4px;
         border: 1px solid var(--border-color);
         padding: 16px;
-        transition: all 0.2s ease-in-out;
         gap: 4px;
     }
 
@@ -136,6 +135,7 @@
     .post-description {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
 
         font-family: IBM Plex Sans, Arial, sans-serif;
         font-size: 12px;
@@ -162,26 +162,11 @@
     }
 
     .analysis {
+        min-width: 50%;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 64px;
         margin: 16px;
-    }
-
-    .analysis {
-        background-color: var(--secondary-background);
-        border-radius: 4px;
-        padding: 16px;
-        margin: 16px;
-        border: 1px solid var(--border-color);
-
-        display: flex;
-        height: min-content;
-        min-height: 250px;
-        min-width: 40%;
-
-        flex-direction: column;
-        gap: 16px;
     }
 
     .avatar {
@@ -211,6 +196,7 @@
 
     .comment-header-text {
         display: flex;
+        flex-wrap: wrap;
     }
 
     .comment-body {

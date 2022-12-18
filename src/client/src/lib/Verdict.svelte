@@ -4,6 +4,7 @@
     const labels_verdict = {
         "not the asshole": "nta",
         "no assholes here": "nah",
+        "no a-holes here": "nah",
         "everyone sucks": "esh",
         "asshole": "yta",
         "info": "info"
@@ -17,8 +18,7 @@
         "info": "INFO"
     }
 
-    verdict = verdict.length > 4 ? labels_verdict[verdict] : verdict.toLowerCase();
-
+    $: verdict = verdict.length > 4 ? labels_verdict[verdict] : verdict.toLowerCase();
 </script>
 
 <span class="post-flair post-{[verdict]}">

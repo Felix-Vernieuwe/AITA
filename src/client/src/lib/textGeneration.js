@@ -1,3 +1,13 @@
+    const filter_words = [
+        'aita', 'update', 'am', 'i', 'the', 'asshole', 'for', 'my', "i'm", 'a',
+        'she', 'esh', 'yta', 'info', 'nta', 'nah', 'you'
+    ];
+
+    const random_words = [
+        'dog', 'cat', 'money', 'love', 'hate', 'dislike', 'cool', 'awesome', 'puppy', 'kitten',
+        'car', 'truck', 'house', 'home', 'work', 'job', 'school', 'college', 'university', 'pizza',
+    ]
+
     export function TitleCase(sentence) {
         return sentence
             .toLowerCase()
@@ -6,36 +16,35 @@
             .join(" ");
     }
 
-    export function selectRandomly(list) {
-        return list[Math.floor(Math.random() * list.length)];
+    export function selectRandomly(list, count=1) {
+        let result = [];
+        for (let i = 0; i < count; i++)
+            result.push(list[Math.floor(Math.random() * list.length)]);
+        return result;
     }
 
     export function selectRandomWordsFromText(text) {
-        // Filter words like 'AITA' and 'Update' from the title
-        const filter_words = [
-            'aita', 'update', 'am', 'i', 'the', 'asshole', 'for', 'my', "i'm", 'a',
-            'she', 'esh', 'yta', 'info', 'nta', 'nah', 'you'
-        ]
         let words = text.split(' ');
         words = words
             .map(word => word.toLowerCase().replace(/[^\w\s]|<[^>]*>/gi, ''))
             .filter(word => !filter_words.includes(word))
             .filter(word => word.length > 0);
 
-        // Select two to four random words, make sure length is maximum 20 characters
         let selected_words = [];
         let selected_words_length = 0;
-        while (selected_words_length < 20 && selected_words.length < 4) {
-            let random_word = selectRandomly(words);
-            selected_words.push(random_word);
-            selected_words_length += random_word.length;
-            // If more than two words are selected
-            if (selected_words.length > 2 && Math.random() > 0.6) {
-                break;
+        if (words.length) {
+            while (selected_words_length < 20 && selected_words.length < 4) {
+                let random_word = selectRandomly(words)[0];
+                selected_words.push(random_word);
+                selected_words_length += random_word.length;
+                if (selected_words.length > 2 && Math.random() > 0.6) {
+                    break;
+                }
             }
+            return selected_words;
+        } else {
+            return selectRandomly(random_words, 4);
         }
-
-        return selected_words;
     }
 
     export function generateName(text) {
@@ -49,7 +58,7 @@
         }
 
         const joining_chars = ['_', '-', ''];
-        let joining_char = selectRandomly(joining_chars);
+        let joining_char = selectRandomly(joining_chars)[0];
         let base_name = words.join(joining_char);
 
         if (Math.random() > 0.3 && base_name.length < 18) {
@@ -96,7 +105,7 @@
         let sentence_length = Math.floor(Math.random() * 80) + 40;
         let sentence = '';
         while (sentence_length > 0) {
-            let word = selectRandomly(words);
+            let word = selectRandomly(words)[0];
             sentence += word + ' ';
             sentence_length -= word.length;
         }

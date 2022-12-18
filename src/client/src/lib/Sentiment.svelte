@@ -1,49 +1,72 @@
 <script>
     import axios from "axios";
+    import Gradient from "./Gradient.svelte";
+    import Verdict from "./Verdict.svelte";
 
     export let body;
 
     let methods = ["BERT", "MNB", "Doc2Vec"];
-    let method;
+    let method = methods[0];
 
-    let analysed = false;
+    let analyzed = false;
     let sentiment = { nta: true, certainty: 0.5210935092349745 };
     $: sentiment.certainty = Math.round(sentiment.certainty * 10000) / 100;
-    function analyse()
-    {
-        if (body !== undefined)
-        {
+    async function analyze() {
+        if (body !== undefined) {
             const options = {
                 params: { body, method },
                 headers: { "content-type": "application/json" }
             }
-            axios.get("http://127.0.0.1:5000/sentiment", options)
-                .then(data => {
-                    sentiment = data.data;
-                    analysed = true;
-                });
+            const data = await axios.get("http://127.0.0.1:5000/sentiment", options)
+            sentiment = data.data;
+            analyzed = true;
         }
     }
+    $: method, analyze();
 
-    function message(nta)
-    {
+    function message(nta) {
         if (nta) return "not the asshole";
         else     return "the asshole";
     }
 </script>
 
-<div class="flex text-right">
-    <button class="p-1.5 h-fit flex-none rounded-md bg-sky-700 text-slate-200" on:click={analyse}>
-        <slot></slot>
-    </button>
-    <select class="p-1.5 ml-2 h-fit rounded-md bg-sky-700 text-slate-200 text-lg" bind:value={method}>
+<div class="sentiment-analysis">
+    <select class="select-method" bind:value={method}>
         {#each methods as method}
             <option value={method}>{ method }</option>
         {/each}
     </select>
-    {#if analysed}
-        <div class="p-1.5 grow text-lg">
-            Our AI model considers the OP of this post to be { message(sentiment.nta) }, with { sentiment.certainty }% certainty
-        </div>
-    {/if}
+
+    <div class="post">
+        {#if analyzed}
+            <div class="p-1.5 grow text-lg">
+                {method} considers the OP of this post to be <Verdict verdict={sentiment.nta ? "nta" : "yta"}/> with
+                <Gradient class="analysis-percentage" value={sentiment.certainty} text={sentiment.certainty + '%'}/> certainty
+            </div>
+        {/if}
+    </div>
 </div>
+
+<style>
+    .sentiment-analysis {
+        display: flex;
+        flex: 0;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .select-method {
+        width: min-content;
+
+        height: 40px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        background-color: var(--secondary-background);
+        color: var(--text-color);
+        font-family: IBM Plex Sans Medium, Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+        padding: 0 16px;
+    }
+
+</style>

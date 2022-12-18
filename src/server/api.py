@@ -105,6 +105,20 @@ class Posts(Resource):
                 nextpage = page + 1
             return {"posts": posts, "nextpage": nextpage}
 
+def determine_verdict(text):
+    verdict = re.search(r"NTA|YTA|ESH|NAH|INFO|asshole", text, re.IGNORECASE)
+    if verdict:
+        location = verdict.span(0)
+        verdict = verdict.group(0).lower()
+        if verdict == "asshole":
+            if re.search(r"not|n't", text[max(0, location[0] - 16):location[0]]):
+                verdict = "nta"
+            else:
+                verdict = "yta"
+        return verdict
+    else:
+        return ''
+
 class Post(Resource):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -123,18 +137,8 @@ class Post(Resource):
         suitable = lambda comment: type(
             comment) == praw.models.Comment and comment.author and comment.author.name != "AutoModerator"
 
-        def determine_verdict(comment):
-            verdict = re.search(r"NTA|YTA|ESH|NAH|INFO|not the asshole", comment.body, re.IGNORECASE)
-            if verdict:
-                verdict = verdict.group(0).lower()
-                if verdict == "not the asshole":
-                    verdict = "nta"
-                return verdict
-            else:
-                return ''
-
-        comments = [{"body": html(comment.body), "timestamp": comment.created * 1000, "score": comment.score, "verdict": determine_verdict(comment)} for comment in submission.comments if suitable(comment)]
-        return {"comments": comments, "body": html(submission.selftext), "title": submission.title, "timestamp": submission.created * 1000}, 200
+        comments = [{"body": html(comment.body), "timestamp": comment.created * 1000, "score": comment.score, "verdict": determine_verdict(comment.body)} for comment in submission.comments if suitable(comment)]
+        return {"verdict": submission.link_flair_text, "comments": comments, "body": html(submission.selftext), "title": submission.title, "timestamp": submission.created * 1000}, 200
 
 
 class Sentiment(Resource):
@@ -172,9 +176,11 @@ class Summary(Resource):
             if not isinstance(comment,
                               praw.models.Comment) or not comment.author or comment.author.name == "AutoModerator":
                 continue
-            if any(yta in comment.body for yta in ("YTA", "ESH")):
+
+            verdict = determine_verdict(comment.body)
+            if verdict in ["yta", "esh"]:
                 yta |= {comment.body}
-            if any(nta in comment.body for nta in ("NTA", "NAH")):
+            elif verdict in ["nta", "nah", "info"]:
                 nta |= {comment.body}
 
         return {"post": summarize(submission.selftext), "yta": summarize(*yta), "yta_count": len(yta),

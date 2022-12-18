@@ -302,14 +302,7 @@ span.title-bar-highlighted {
 
 }
 
-.analysis-percentage {
-    color: var(--text-complement-accent-color);
-    font-family: IBM Plex Sans, Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 25px;
-}
+
 
 .post {
     position: relative;

@@ -4,10 +4,10 @@
     export let min = 0;
     export let max = 100;
 
-    $: subDivision = Math.max(0, Math.min(10, 10 - Math.floor((value - min) / ((max - min) / 10))));
+    $: subDivision = Math.max(0, Math.min(9, 10 - Math.floor((value - min) / ((max - min) / 10))));
 </script>
 
-<span class={$$props.class + ` gradient-${subDivision}`}>{text}</span>
+<span class={`analysis-percentage gradient-${subDivision}`}>{text}</span>
 
 <style>
     .gradient-0 {
@@ -48,5 +48,14 @@
 
     .gradient-9 {
         background: linear-gradient(to right, #e2886c 0%, #dd776e 100%);
+    }
+
+    .analysis-percentage {
+        color: var(--text-complement-accent-color);
+        font-family: IBM Plex Sans, Arial, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 25px;
     }
 </style>

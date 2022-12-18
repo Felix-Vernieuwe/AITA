@@ -204,6 +204,7 @@
         margin-left: 12px;
         padding-left: 16px;
         border-left: 2px solid var(--faint-border-color);
+        color: var(--text-color);
 
         font-family: Noto Sans, Arial, sans-serif;
         font-size: 14px;

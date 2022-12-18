@@ -39,7 +39,7 @@
 
     <div class="post">
         {#if analyzed}
-            <div class="p-1.5 grow text-lg">
+            <div class="sentiment-body">
                 {method} considers the OP of this post to be <Verdict verdict={sentiment.nta ? "nta" : "yta"}/> with
                 <Gradient class="analysis-percentage" value={sentiment.certainty} text={sentiment.certainty + '%'}/> certainty
             </div>
@@ -67,6 +67,10 @@
         font-size: 16px;
         font-weight: 500;
         padding: 0 16px;
+    }
+
+    .sentiment-body {
+        color: var(--text-color);
     }
 
 </style>

@@ -1,5 +1,4 @@
 <script>
-    import {onMount} from "svelte";
     import Gradient from "./Gradient.svelte";
     import axios from "axios";
 
@@ -8,7 +7,7 @@
     export let url;
 
     let methods = ["BERT", "LexRank"];
-    let method = methods[0];
+    let method = methods[1];
 
     let loading = true;
     let summary = {
@@ -105,6 +104,7 @@
         font-size: 16px;
         font-weight: 600;
         margin-block-end: 0;
+        color: var(--text-color);
     }
 
     .comments-verdict-title {
@@ -112,18 +112,21 @@
         font-size: 16px;
         font-weight: 500;
         margin-bottom: 6px;
+        color: var(--text-color);
     }
 
     .summary-body {
         font-family: Noto Sans, Arial, sans-serif;
         font-size: 14px;
         font-weight: 400;
+        color: var(--text-faint-color);
     }
 
     .comments-verdict-body {
         font-family: Noto Sans, Arial, sans-serif;
         font-size: 14px;
         font-weight: 400;
+        color: var(--text-faint-color);
     }
 
     .select-method {

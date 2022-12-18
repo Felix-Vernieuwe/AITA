@@ -49,6 +49,7 @@
     .post-header {
         display: block;
         min-height: 40px;
+        color: var(--text-color);
     }
 
     .post:hover {

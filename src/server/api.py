@@ -13,13 +13,13 @@ from flask_restful import Resource
 import praw
 from dotenv import load_dotenv
 
-from classifiers.doc2vec_classifier import Doc2VecClassifier
-from classifiers.multinominal_bayes_classifier import MultinomialBayesClassifier
-from classifiers.bert_classifier import BertClassifier
-from classifiers.classifier import preprocess_dataset
+from src.classifiers.doc2vec_classifier import Doc2VecClassifier
+from src.classifiers.multinominal_bayes_classifier import MultinomialBayesClassifier
+from src.classifiers.bert_classifier import BertClassifier
+from src.classifiers.classifier import preprocess_dataset
 
-from conversions import html
-from summary import lexrank_summary, bert_summary
+from src.conversions import html
+from src.summary import lexrank_summary, bert_summary
 
 load_dotenv()
 

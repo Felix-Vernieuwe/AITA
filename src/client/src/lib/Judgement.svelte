@@ -8,6 +8,8 @@
 
     let methods = ["BERT", "MNB", "Doc2Vec"];
     let method = methods[0];
+    let selected_method = method;
+
     let analyzed = false;
     let sentiment = { nta: true, certainty: 0.5210935092349745 };
     $: sentiment.certainty = Math.round(sentiment.certainty * 10000) / 100;
@@ -23,6 +25,7 @@
             sentiment = data.data;
             analyzed = true;
         }
+        selected_method = method;
     }
 </script>
 
@@ -41,14 +44,16 @@
                 <option value={method}>{ method }</option>
             {/each}
         </select>
-        <div class="judge-button">
+        <div class="judge-button" on:click={async () => {
+            await analyze();
+        }}>
             Judge!
         </div>
     </div>
     <div class="post verdict">
         {#if analyzed}
             <div class="sentiment-body">
-                {method} considers the OP of this post to be
+                {selected_method} considers the OP of this post to be
                 <Verdict verdict={sentiment.nta ? "nta" : "yta"}/>
                 with
                 <Gradient class="analysis-percentage" value={sentiment.certainty} text={sentiment.certainty + '%'}/>
@@ -71,6 +76,7 @@
         display: flex;
         flex-direction: row;
         justify-content: center;
+        align-items: center;
         flex: 0;
         gap: 16px;
     }
@@ -88,6 +94,9 @@
         font-family: IBM Plex Sans, Arial, sans-serif;
         font-size: 16px;
 
+        background-color: var(--secondary-background);
+        color: var(--text-color);
+
     }
 
     .judgement-area:focus {
@@ -97,6 +106,7 @@
 
     .select-method {
         width: min-content;
+
 
         height: 40px;
         border-radius: 4px;
@@ -111,9 +121,8 @@
 
 
     .judge-button {
-        margin: 0 8px;
-        padding: 8px 16px;
         border-radius: 20px;
+        height: min-content;
 
         font-family: Noto Sans, Arial, sans-serif;
         font-size: 14px;
@@ -121,21 +130,22 @@
 
         cursor: pointer;
         border: 0;
-        background-color: var(--secondary-accent-color);
+        background-color: var(--primary-accent-color);
         color: var(--text-complement-accent-color);
         transition: background-color 0.2s ease-in-out;
     }
 
     .judge-button:hover {
-        background-color: var(--secondary-accent-color-hover);
+        background-color: var(--primary-accent-color-hover);
     }
 
 
 
     .verdict {
         min-width: 700px;
-        min-height: 30px;
+        min-height: 20px;
         text-align: center;
+        color: var(--text-color);
     }
 
 </style>

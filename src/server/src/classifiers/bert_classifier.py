@@ -61,7 +61,7 @@ class BertClassifier(Classifier):
         self.classifier.save_pretrained(path + "/classifier")
         self.tokenizer.save_pretrained(path + "/tokenizer")
 
-    def load_model(self, path: str = "classifiers/bert"):
+    def load_model(self, path: str = "src/classifiers/bert"):
         self.classifier = BertForSequenceClassification.from_pretrained(f"{path}/classifier")
         self.classifier.to(self.device)
         self.tokenizer = BertTokenizer.from_pretrained(f"{path}/tokenizer")

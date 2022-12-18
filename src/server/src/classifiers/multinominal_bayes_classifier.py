@@ -16,7 +16,7 @@ class MultinomialBayesClassifier(Classifier):
         self.vectorizer = None
         self.classifier = None
 
-    def save_model(self, path="./classifiers/mnb"):
+    def save_model(self, path="src/classifiers/mnb"):
         if not os.path.exists(path):
             os.makedirs(path)
         with open(path + "/vectorizer.pickle", "wb") as f:
@@ -24,7 +24,7 @@ class MultinomialBayesClassifier(Classifier):
         with open(path + "/classifier.pickle", "wb") as f:
             pickle.dump(self.classifier, f)
 
-    def load_model(self, path="./classifiers/mnb"):
+    def load_model(self, path="src/classifiers/mnb"):
         with open(path + "/vectorizer.pickle", "rb") as f:
             self.vectorizer = pickle.load(f)
         with open(path + "/classifier.pickle", "rb") as f:

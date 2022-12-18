@@ -16,14 +16,14 @@ class Doc2VecClassifier(Classifier):
         self.vectorizer = None
         self.classifier = None
 
-    def save_model(self, path: str = "./classifiers/doc2vec"):
+    def save_model(self, path: str = "src/classifiers/doc2vec"):
         if not os.path.exists(path):
             os.makedirs(path)
         self.vectorizer.save(path + "/vectorizer.model")
         with open(path + "/classifier.pickle", "wb") as f:
             pickle.dump(self.classifier, f)
 
-    def load_model(self, path: str = "./classifiers/doc2vec"):
+    def load_model(self, path: str = "src/classifiers/doc2vec"):
         self.vectorizer = models.Doc2Vec.load(path + "/vectorizer.model")
         with open(path + "/classifier.pickle", "rb") as f:
             self.classifier = pickle.load(f)
